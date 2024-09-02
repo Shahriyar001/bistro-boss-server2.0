@@ -272,7 +272,20 @@ async function run() {
       //   0
       // );
 
-      const result = await paymentCollection.aggregate([{}]);
+      const result = await paymentCollection
+        .aggregate([
+          {
+            $group: {
+              _id: null,
+              totalRevenue: {
+                $sum: "$price",
+              },
+            },
+          },
+        ])
+        .toArray();
+
+      const revenue = result.length > 0 ? result[0].totalRevenue : 0;
 
       res.send({
         users,
@@ -281,6 +294,7 @@ async function run() {
         revenue,
       });
     });
+    console.log("Aggregation result:", result);
 
     // carts collections
 
