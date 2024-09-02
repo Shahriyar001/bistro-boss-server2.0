@@ -260,6 +260,28 @@ async function run() {
       });
     });
 
+    app.get("/admin-stats", async (req, res) => {
+      const users = await usersCollection.estimatedDocumentCount();
+      const menuItems = await menuCollection.estimatedDocumentCount();
+      const orders = await paymentCollection.estimatedDocumentCount();
+
+      // this is not the best way
+      // const payment = await paymentCollection.find().toArray();
+      // const revenue = payment.reduce(
+      //   (total, payment) => total + payment.price,
+      //   0
+      // );
+
+      const result = await paymentCollection.aggregate([{}]);
+
+      res.send({
+        users,
+        menuItems,
+        orders,
+        revenue,
+      });
+    });
+
     // carts collections
 
     // Send a ping to confirm a successful connection
