@@ -294,7 +294,57 @@ async function run() {
         revenue,
       });
     });
-    console.log("Aggregation result:", result);
+    // console.log("Aggregation result:", result);
+
+    // use aggregate pipeline
+    app.get("/order-stats", async (req, res) => {
+      const result = await paymentCollection
+        .aggregate([
+          {
+            $unwind: "$menuItemId",
+          },
+          {
+            $lookup: {
+              from: "Menu",
+              localField: "menuItemId",
+              foreignField: "_id",
+              as: "menuItems",
+            },
+          },
+          {
+            $unwind: "$menuItemId",
+          },
+          {
+            $group: {
+              _id: "$menuItems.category",
+              quantity: { $sum: 1 },
+              revenue: { $sum: "$menuItems.price" },
+            },
+          },
+        ])
+        .toArray();
+      res.send(result);
+    });
+
+    // app.get("/order-stats", async (req, res) => {
+    //   try {
+    //     const result = await paymentCollection
+    //       .aggregate([
+    //         {
+    //           $group: {
+    //             _id: "$status", // Group by the "status" field
+    //             count: { $sum: 1 }, // Count the number of documents for each status
+    //           },
+    //         },
+    //       ])
+    //       .toArray();
+
+    //     res.send(result);
+    //   } catch (error) {
+    //     console.error("Error retrieving order stats:", error);
+    //     res.status(500).send({ message: "Error retrieving order stats" });
+    //   }
+    // });
 
     // carts collections
 
