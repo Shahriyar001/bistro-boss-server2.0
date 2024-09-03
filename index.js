@@ -301,18 +301,18 @@ async function run() {
       const result = await paymentCollection
         .aggregate([
           {
-            $unwind: "$menuItemId",
+            $unwind: "$menuItemIds",
           },
           {
             $lookup: {
               from: "Menu",
-              localField: "menuItemId",
+              localField: "menuItemIds",
               foreignField: "_id",
               as: "menuItems",
             },
           },
           {
-            $unwind: "$menuItemId",
+            $unwind: "$menuItems",
           },
           {
             $group: {
@@ -321,10 +321,93 @@ async function run() {
               revenue: { $sum: "$menuItems.price" },
             },
           },
+          {
+            $project: {
+              _id: 0,
+              category: "$_id",
+              quantity: "$quantity",
+              revenue: "$revenue",
+            },
+          },
         ])
         .toArray();
       res.send(result);
     });
+
+    // app.get("/order-stats", async (req, res) => {
+    //   const result = await paymentCollection
+    //     .aggregate([
+    //       {
+    //         $unwind: "$menuItemIds", // Changed from 'menuItemId' to 'menuItemIds'
+    //       },
+    //       {
+    //         $lookup: {
+    //           from: "menu", // Ensure collection name matches (changed 'Menu' to 'menu')
+    //           localField: "menuItemIds", // Use the correct field name
+    //           foreignField: "_id",
+    //           as: "menuItems",
+    //         },
+    //       },
+    //       {
+    //         $unwind: "$menuItems",
+    //       },
+    //       {
+    //         $group: {
+    //           _id: "$menuItems.category",
+    //           quantity: { $sum: 1 },
+    //           revenue: { $sum: "$menuItems.price" },
+    //         },
+    //       },
+    //       {
+    //         $project: {
+    //           _id: 0,
+    //           category: "$_id",
+    //           quantity: "$quantity",
+    //           revenue: "$revenue",
+    //         },
+    //       },
+    //     ])
+    //     .toArray();
+    //   res.send(result);
+    // });
+
+    // app.get("/order-stats", async (req, res) => {
+    //   const result = await paymentCollection
+    //     .aggregate([
+    //       {
+    //         $unwind: "$menuItemId",
+    //       },
+    //       {
+    //         $lookup: {
+    //           from: "menu",
+    //           localField: "menuItemId",
+    //           foreignField: "_id",
+    //           as: "menuItems",
+    //         },
+    //       },
+    //       {
+    //         $unwind: "$menuItems",
+    //       },
+    //       {
+    //         $group: {
+    //           _id: "$menuItems.category",
+    //           quantity: { $sum: 1 },
+    //           revenue: { $sum: "$menuItems.price" },
+    //         },
+    //       },
+    //       {
+    //         $project: {
+    //           _id: 0,
+    //           category: "$_id",
+    //           quantity: "$quantity",
+    //           revenue: "$revenue",
+    //         },
+    //       },
+    //     ])
+    //     .toArray();
+
+    //   res.send(result);
+    // });
 
     // app.get("/order-stats", async (req, res) => {
     //   try {
